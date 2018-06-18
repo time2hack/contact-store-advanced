@@ -1,4 +1,47 @@
 $(document).ready(function(){
+  var mimes = {
+    "image/gif": {
+      "source": "iana",
+      "compressible": false,
+      "extensions": ["gif"]
+    },
+    "image/jpeg": {
+      "source": "iana",
+      "compressible": false,
+      "extensions": ["jpeg","jpg","jpe"]
+    },
+    "image/png": {
+      "source": "iana",
+      "compressible": false,
+      "extensions": ["png"]
+    },
+    "image/svg+xml": {
+      "source": "iana",
+      "compressible": true,
+      "extensions": ["svg","svgz"]
+    },
+    "image/webp": {
+      "source": "apache",
+      "extensions": ["webp"]
+    },
+  };
+
+  var saveImage = function(file, filename, ref) {
+    if(!ref) ref = firebase.storage().ref();
+    if(mimes[file.type].extensions[0]) {
+
+      // Create the file metadata
+      var metadata = {
+        contentType: file.type
+      };
+
+      // Upload file and metadata to the object
+      var uploadTask = ref.child(filename + '.' + mimes[file.type].extensions[0]).put(file, metadata);
+
+      return uploadTask;
+    }
+  }
+
   //initialize the firebase app
   var config = {
     apiKey: "AIzaSyCKNcULQZxFMYioXei32XNWQVoeutz4XDA",
@@ -21,7 +64,7 @@ $(document).ready(function(){
   $('#registerForm').on('submit', function (e) {
     e.preventDefault();
     $('#registerModal').modal('hide');
-    $('#messageModalLabel').html(spanText('<i class="fa fa-cog fa-spin"></i>', ['center', 'info']));
+    $('#messageModalLabel').html(span('<i class="fa fa-cog fa-spin"></i>', ['center', 'info']));
     $('#messageModal').modal('show');
     var data = {
       email: $('#registerEmail').val(), //get the email from Form
@@ -39,9 +82,41 @@ $(document).ready(function(){
         firebase.auth()
           .createUserWithEmailAndPassword(data.email, passwords.password)
           .then(function(user) {
-            return user.updateProfile({
-              displayName: data.firstName + ' ' + data.lastName
-            })
+            debugger
+            var imagesRef = firebase.storage().ref().child('profile-images');
+            var file = $('#registerPhoto').get(0).files[0];
+            if(file) {
+              var task = saveImage(file, user.uid, imagesRef)
+              task.on('state_changed', function(snapshot){
+                // Observe state change events such as progress, pause, and resume
+                var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                console.log('Upload is ' + progress + '% done');
+                switch (snapshot.state) {
+                  case firebase.storage.TaskState.PAUSED: // or 'paused'
+                    console.log('Upload is paused');
+                    break;
+                  case firebase.storage.TaskState.RUNNING: // or 'running'
+                    console.log('Upload is running');
+                    break;
+                }
+              }, function(error) {
+                // Handle unsuccessful uploads
+                console.error(error)
+              }, function() {
+                // Handle successful uploads on complete
+                task.snapshot.ref.getDownloadURL().then(function(downloadURL) {
+                  console.log('File available at', downloadURL);
+                  return user.updateProfile({
+                    displayName: data.firstName + ' ' + data.lastName,
+                    photoURL: downloadURL
+                  })
+                });
+              });
+            } else {
+              return user.updateProfile({
+                displayName: data.firstName + ' ' + data.lastName
+              })
+            }
           })
           .then(function(user){
             //now user is needed to be logged in to save data
@@ -51,17 +126,17 @@ $(document).ready(function(){
               .then(function(){
                 console.log("User Information Saved:", user.uid);
               })
-            $('#messageModalLabel').html(spanText('Success!', ['center', 'success']))
+            $('#messageModalLabel').html(span('Success!', ['center', 'success']))
             
             $('#messageModal').modal('hide');
           })
           .catch(function(error){
             console.log("Error creating user:", error);
-            $('#messageModalLabel').html(spanText('ERROR: '+error.code, ['danger']))
+            $('#messageModalLabel').html(span('ERROR: '+error.code, ['danger']))
           });
       } else {
         //password and confirm password didn't match
-        $('#messageModalLabel').html(spanText("ERROR: Passwords didn't match", ['danger']))
+        $('#messageModalLabel').html(span("ERROR: Passwords didn't match", ['danger']))
       }
     }  
   });
@@ -70,7 +145,7 @@ $(document).ready(function(){
   $('#loginForm').on('submit', function (e) {
     e.preventDefault();
     $('#loginModal').modal('hide');
-    $('#messageModalLabel').html(spanText('<i class="fa fa-cog fa-spin"></i>', ['center', 'info']));
+    $('#messageModalLabel').html(span('<i class="fa fa-cog fa-spin"></i>', ['center', 'info']));
     $('#messageModal').modal('show');
 
     if( $('#loginEmail').val() != '' && $('#loginPassword').val() != '' ){
@@ -82,12 +157,12 @@ $(document).ready(function(){
       firebase.auth().signInWithEmailAndPassword(data.email, data.password)
         .then(function(authData) {
           auth = authData;
-          $('#messageModalLabel').html(spanText('Success!', ['center', 'success']))
+          $('#messageModalLabel').html(span('Success!', ['center', 'success']))
           $('#messageModal').modal('hide');
         })
         .catch(function(error) {
           console.log("Login Failed!", error);
-          $('#messageModalLabel').html(spanText('ERROR: '+error.code, ['danger']))
+          $('#messageModalLabel').html(span('ERROR: '+error.code, ['danger']))
         });
     }
   });
@@ -123,13 +198,14 @@ $(document).ready(function(){
 
   firebase.auth().onAuthStateChanged(function(user) {
     if (user) {
+      console.log(user)
       auth = user;
       $('body').removeClass('auth-false').addClass('auth-true');
       usersRef.child(user.uid).once('value').then(function (data) {
         var info = data.val();
-        if(user.photoUrl) {
+        if(user.photoURL) {
           $('.user-info img').show();
-          $('.user-info img').attr('src', user.photoUrl);
+          $('.user-info img').attr('src', user.photoURL);
           $('.user-info .user-name').hide();
         } else if(user.displayName) {
           $('.user-info img').hide();
@@ -164,14 +240,11 @@ function contactHtmlFromObject(key, contact){
         + contact.location.city + ', '
         + contact.location.state
       + '</p>'
-      // + '<a href="#" class="card-link">Card link</a>'
-      // + '<a href="#" class="card-link">Another link</a>'
     + '</div>'
   + '</div>';
 }
 
-function spanText(textStr, textClasses) {
+function span(textStr, textClasses) {
   var classNames = textClasses.map(c => 'text-'+c).join(' ');
   return '<span class="'+classNames+'">'+ textStr + '</span>';
 }
-
