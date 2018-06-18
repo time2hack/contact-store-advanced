@@ -31,6 +31,11 @@ header + hr {
   display: inline-block;
   margin: 0 0.5em;
 }
+.user-info.with-image {
+  border: 1px solid #007bff;
+  border-radius: 50%;
+  padding: 2px;
+}
 .user-info img{
   display: inline-block;
   max-width: 2em;

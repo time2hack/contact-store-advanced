@@ -20,9 +20,15 @@
         <button type="button" class="btn btn-success" data-toggle="modal" data-target="#loginModal">Login</button>
       </div>
       <div class="userAuth authenticated pull-right">
-        <span class="user-info">
-          <img src="./user.svg" alt="User" class="rounded-circle">
-        </span>
+        <div class="d-inline-block">
+          <span class="user-info" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <img src="./user.svg" alt="User" class="rounded-circle" />
+          </span>
+          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
+            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#updateInfoModal">Update Info</a>
+            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#settingsModal">Change Email and Password</a>
+          </div>
+        </div>
         <button type="button" class="btn btn-success" id="logout">Logout</button>
       </div>
     </header>
@@ -52,24 +58,28 @@
           </div>
           <div class="modal-body">
             <div class="form-group">
-              <label for="recipient-name" class="control-label">First Name:</label>
+              <label for="registerFirstName" class="control-label">First Name:</label>
               <input type="text" class="form-control" id="registerFirstName">
             </div>
             <div class="form-group">
-              <label for="recipient-name" class="control-label">Last Name:</label>
+              <label for="registerLastName" class="control-label">Last Name:</label>
               <input type="text" class="form-control" id="registerLastName">
             </div>
             <div class="form-group">
-              <label for="recipient-name" class="control-label">Email:</label>
+              <label for="registerEmail" class="control-label">Email:</label>
               <input type="text" class="form-control" id="registerEmail">
             </div>
             <div class="form-group">
-              <label for="message-text" class="control-label">Password:</label>
+              <label for="registerPassword" class="control-label">Password:</label>
               <input type="password" class="form-control" id="registerPassword">
             </div>
             <div class="form-group">
-              <label for="message-text" class="control-label">Confirm Password:</label>
+              <label for="registerConfirmPassword" class="control-label">Confirm Password:</label>
               <input type="password" class="form-control" id="registerConfirmPassword">
+            </div>
+            <div class="form-group">
+              <label for="registerPhoto" class="control-label">Profile Picture:</label>
+              <input type="file" class="form-control" id="registerPhoto">
             </div>
           </div>
           <div class="modal-footer">
@@ -165,12 +175,77 @@
       </div>
     </div>
   </div>
+  <div class="modal fade" id="updateInfoModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+      <form id="updateForm" method="POST">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title" id="messageModalLabel">Update Info</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="updateFirstName" class="control-label">First Name:</label>
+              <input type="text" class="form-control" name="firstName" id="updateFirstName">
+            </div>
+            <div class="form-group">
+              <label for="updateLastName" class="control-label">Last Name:</label>
+              <input type="text" class="form-control" name="lastName" id="updateLastName">
+            </div>
+            <div class="form-group">
+              <label for="updatePhoto" class="control-label">Profile Picture:</label>
+              <input type="file" class="form-control" name="photo" id="updatePhoto">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary" id="doUpdate">Update</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+      <form id="settingsForm" method="POST">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title" id="messageModalLabel">Settings</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="settingsEmail" class="control-label">Email:</label>
+              <input type="text" class="form-control" name="settingsEmail" id="settingsEmail">
+            </div>
+            <div class="form-group">
+              <label for="settingsPassword" class="control-label">Password:</label>
+              <input type="password" class="form-control" name="settingsPassword" id="settingsPassword">
+            </div>
+            <div class="form-group">
+              <label for="settingsConfirmPassword" class="control-label">Confirm Password:</label>
+              <input type="password" class="form-control" name="settingsConfirmPassword" id="settingsConfirmPassword">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary" id="doUpdateSettings">Update</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
 
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
-  <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/5.0.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/5.0.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/5.0.0/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/5.0.0/firebase-storage.js"></script>
   <!-- Contacts Store JavaScript -->
+  <script src="./functions.js"></script>
   <script src="./script.js"></script>
 </body>
 </html>
