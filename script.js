@@ -1,47 +1,11 @@
 $(document).ready(function(){
-  var mimes = {
-    "image/gif": {
-      "source": "iana",
-      "compressible": false,
-      "extensions": ["gif"]
-    },
-    "image/jpeg": {
-      "source": "iana",
-      "compressible": false,
-      "extensions": ["jpeg","jpg","jpe"]
-    },
-    "image/png": {
-      "source": "iana",
-      "compressible": false,
-      "extensions": ["png"]
-    },
-    "image/svg+xml": {
-      "source": "iana",
-      "compressible": true,
-      "extensions": ["svg","svgz"]
-    },
-    "image/webp": {
-      "source": "apache",
-      "extensions": ["webp"]
-    },
-  };
-
-  var saveImage = function(file, filename, ref) {
-    if(!ref) ref = firebase.storage().ref();
-    if(mimes[file.type].extensions[0]) {
-
-      // Create the file metadata
-      var metadata = {
-        contentType: file.type
-      };
-
-      // Upload file and metadata to the object
-      var uploadTask = ref.child(filename + '.' + mimes[file.type].extensions[0]).put(file, metadata);
-
-      return uploadTask;
-    }
+  var forms = {
+    login: '#loginForm',
+    settings: '#settingsForm',
+    updateUserInfo: '#updateForm',
+    addContact: '#contactForm',
+    register: '#registerForm',
   }
-
   //initialize the firebase app
   var config = {
     apiKey: "AIzaSyCKNcULQZxFMYioXei32XNWQVoeutz4XDA",
@@ -61,7 +25,7 @@ $(document).ready(function(){
   var auth = null;
 
   //Register
-  $('#registerForm').on('submit', function (e) {
+  $(forms.register).on('submit', function (e) {
     e.preventDefault();
     $('#registerModal').modal('hide');
     $('#messageModalLabel').html(span('<i class="fa fa-cog fa-spin"></i>', ['center', 'info']));
@@ -77,55 +41,33 @@ $(document).ready(function(){
     }
     if( data.email != '' && passwords.password != ''  && passwords.cPassword != '' ){
       if( passwords.password == passwords.cPassword ){
-        //create the user
-        
-        firebase.auth()
-          .createUserWithEmailAndPassword(data.email, passwords.password)
-          .then(function(user) {
-            debugger
+        Auth.createUserWithEmailAndPassword(data.email, passwords.password)
+          .then(function() {
+            user = Auth.currentUser
             var imagesRef = firebase.storage().ref().child('profile-images');
             var file = $('#registerPhoto').get(0).files[0];
+            var data = {
+              displayName: data.firstName + ' ' + data.lastName,
+              photoURL: null
+            };
             if(file) {
               var task = saveImage(file, user.uid, imagesRef)
-              task.on('state_changed', function(snapshot){
-                // Observe state change events such as progress, pause, and resume
-                var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                console.log('Upload is ' + progress + '% done');
-                switch (snapshot.state) {
-                  case firebase.storage.TaskState.PAUSED: // or 'paused'
-                    console.log('Upload is paused');
-                    break;
-                  case firebase.storage.TaskState.RUNNING: // or 'running'
-                    console.log('Upload is running');
-                    break;
-                }
-              }, function(error) {
-                // Handle unsuccessful uploads
-                console.error(error)
-              }, function() {
+              task.on('state_changed', progress || console.log, error || console.error, function() {
                 // Handle successful uploads on complete
-                task.snapshot.ref.getDownloadURL().then(function(downloadURL) {
-                  console.log('File available at', downloadURL);
-                  return user.updateProfile({
-                    displayName: data.firstName + ' ' + data.lastName,
-                    photoURL: downloadURL
-                  })
+                task.snapshot.ref.getDownloadURL().then(function(url) {
+                  console.log('File available at', url);
+                  data.photoURL = url;
+                  return user.updateProfile(data)
                 });
               });
-            } else {
-              return user.updateProfile({
-                displayName: data.firstName + ' ' + data.lastName
-              })
             }
+            return user.updateProfile(data)
           })
-          .then(function(user){
-            //now user is needed to be logged in to save data
-            auth = user;
-            //now saving the profile data
-            usersRef.child(user.uid).set(data)
-              .then(function(){
-                console.log("User Information Saved:", user.uid);
-              })
+          .then(function(){
+            auth = Auth.currentUser;
+            saveUserInfo(data).then(function(){
+              console.log("User Information Saved:", auth.uid);
+            })
             $('#messageModalLabel').html(span('Success!', ['center', 'success']))
             
             $('#messageModal').modal('hide');
@@ -142,7 +84,7 @@ $(document).ready(function(){
   });
 
   //Login
-  $('#loginForm').on('submit', function (e) {
+  $(forms.login).on('submit', function (e) {
     e.preventDefault();
     $('#loginModal').modal('hide');
     $('#messageModalLabel').html(span('<i class="fa fa-cog fa-spin"></i>', ['center', 'info']));
@@ -172,24 +114,33 @@ $(document).ready(function(){
     firebase.auth().signOut()
   });
 
+  //Login
+  $(forms.updateUserInfo).on('submit', function (e) {
+    e.preventDefault();
+    var values = extractFormData(forms.updateUserInfo);
+    user = Auth.currentUser;
+    saveUserInfo(values).then(function(){
+      console.log("User Information Saved:", user.uid);
+    })
+  });
+
   //save contact
-  $('#contactForm').on('submit', function( event ) {  
+  $(forms.addContact).on('submit', function( event ) {  
     event.preventDefault();
     if( auth != null ){
       if( $('#name').val() != '' || $('#email').val() != '' ){
-        contactsRef.child(auth.uid)
-          .push({
-            name: $('#name').val(),
-            email: $('#email').val(),
-            location: {
-              city: $('#city').val(),
-              state: $('#state').val(),
-              zip: $('#zip').val()
-            }
-          })
-          document.contactForm.reset();
+        contactsRef.child(auth.uid).push({
+          name: $('#name').val(),
+          email: $('#email').val(),
+          location: {
+            city: $('#city').val(),
+            state: $('#state').val(),
+            zip: $('#zip').val()
+          }
+        });
+        document.contactForm.reset();
       } else {
-        alert('Please fill at-lease name or email!');
+        alert('Please fill at-least name or email!');
       }
     } else {
       //inform user to login
@@ -201,19 +152,13 @@ $(document).ready(function(){
       console.log(user)
       auth = user;
       $('body').removeClass('auth-false').addClass('auth-true');
-      usersRef.child(user.uid).once('value').then(function (data) {
-        var info = data.val();
-        if(user.photoURL) {
-          $('.user-info img').show();
-          $('.user-info img').attr('src', user.photoURL);
-          $('.user-info .user-name').hide();
-        } else if(user.displayName) {
-          $('.user-info img').hide();
-          $('.user-info').append('<span class="user-name">'+user.displayName+'</span>');
-        } else if(info.firstName) {
-          $('.user-info img').hide();
-          $('.user-info').append('<span class="user-name">'+info.firstName+'</span>');
-        }
+      usersRef.child(user.uid).once('value').then(function (snapshot) {
+        var info = snapshot.val();
+        var data = Object.assign({}, info, {
+          photoURL: user.photoURL,
+          displayName: user.displayName,
+        });
+        setUserInfoArea(data);
       });
       contactsRef.child(user.uid).on('child_added', onChildAdd);
     } else {
@@ -224,27 +169,9 @@ $(document).ready(function(){
       auth = null;
     }
   });
+
+  function saveUserInfo(data) {
+    user = Auth.currentUser;
+    return usersRef.child(user.uid).set(data)
+  }
 });
-
-function onChildAdd (snap) {
-  $('#contacts').append(contactHtmlFromObject(snap.key, snap.val()));
-}
- 
-//prepare contact object's HTML
-function contactHtmlFromObject(key, contact){
-  return '<div class="card contact" style="width: 18rem;" id="'+key+'">'
-    + '<div class="card-body">'
-      + '<h5 class="card-title">'+contact.name+'</h5>'
-      + '<h6 class="card-subtitle mb-2 text-muted">'+contact.email+'</h6>'
-      + '<p class="card-text" title="' + contact.location.zip+'">'
-        + contact.location.city + ', '
-        + contact.location.state
-      + '</p>'
-    + '</div>'
-  + '</div>';
-}
-
-function span(textStr, textClasses) {
-  var classNames = textClasses.map(c => 'text-'+c).join(' ');
-  return '<span class="'+classNames+'">'+ textStr + '</span>';
-}
