@@ -91,7 +91,7 @@ var extractFormData = function (form) {
   for(var pair of formData.entries()) {
     if( values[pair[0]] ) {
       if(!(values[pair[0]] instanceof Array)) {
-      values[pair[0]] = new Array();
+        values[pair[0]] = new Array(values[pair[0]]);
       }
       values[pair[0]].push(pair[1]);
     } else {
