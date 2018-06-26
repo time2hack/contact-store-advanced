@@ -18,12 +18,12 @@ header + hr {
 }
 .card {
   display: inline-block;
-  margin: 1em;
-  max-width: calc(25% - 2em);
+  margin: 0.5em;
+  max-width: calc(25% - 1em);
 }
 #contacts {
-  margin-left: -1em;
-  margin-right: -1em;
+  margin-left: -0.5em;
+  margin-right: -0.5em;
   display: flex;
   flex-wrap: wrap;
 }

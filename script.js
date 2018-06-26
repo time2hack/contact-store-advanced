@@ -114,22 +114,21 @@ $(document).ready(function(){
   $(forms.addContact).on('submit', function( event ) {  
     event.preventDefault();
     if( user != null ){
-      if( $('#name').val() != '' || $('#email').val() != '' ){
-        contactsRef.child(auth.uid).push({
-          name: $('#name').val(),
-          email: $('#email').val(),
+      var formData = extractFormData(forms.addContact);
+      if( formData.name !== '' || formData.email !== '' ){
+        contactsRef.child(user.uid).push({
+          name: formData.name,
+          email: formData.email,
           location: {
-            city: $('#city').val(),
-            state: $('#state').val(),
-            zip: $('#zip').val()
+            city: formData.city,
+            state: formData.state,
+            zip: formData.zip,
           }
         });
         document.contactForm.reset();
       } else {
         alert('Please fill at-least name or email!');
       }
-    } else {
-      //inform user to login
     }
   });
 
