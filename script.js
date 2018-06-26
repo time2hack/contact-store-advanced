@@ -22,7 +22,7 @@ $(document).ready(function(){
   var dbRef = firebase.database();
   var contactsRef = dbRef.ref('contacts')
   var usersRef = dbRef.ref('users')
-  var auth = null;
+  var user = null;
 
   //Register
   $(forms.register).on('submit', function (e) {
@@ -35,51 +35,40 @@ $(document).ready(function(){
       firstName: $('#registerFirstName').val(), // get firstName
       lastName: $('#registerLastName').val(), // get lastName
     };
-    var passwords = {
-      password : $('#registerPassword').val(), //get the pass from Form
-      cPassword : $('#registerConfirmPassword').val(), //get the confirmPass from Form
-    }
-    if( data.email != '' && passwords.password != ''  && passwords.cPassword != '' ){
-      if( passwords.password == passwords.cPassword ){
-        Auth.createUserWithEmailAndPassword(data.email, passwords.password)
-          .then(function() {
-            user = Auth.currentUser
-            var imagesRef = firebase.storage().ref().child('profile-images');
-            var file = $('#registerPhoto').get(0).files[0];
-            var data = {
-              displayName: data.firstName + ' ' + data.lastName,
-              photoURL: null
-            };
-            if(file) {
-              var task = saveImage(file, user.uid, imagesRef)
-              task.on('state_changed', progress || console.log, error || console.error, function() {
-                // Handle successful uploads on complete
-                task.snapshot.ref.getDownloadURL().then(function(url) {
-                  console.log('File available at', url);
-                  data.photoURL = url;
-                  return user.updateProfile(data)
-                });
-              });
-            }
-            return user.updateProfile(data)
+    
+    var password = $('#registerPassword').val(); //get the pass from Form
+    var cPassword = $('#registerConfirmPassword').val(); //get the confirmPass from Form
+    var profileData = {
+      displayName: data.firstName + ' ' + data.lastName,
+      photoURL: null
+    };
+    if( data.email != '' && password != ''  && cPassword === password ){
+      Auth.createUserWithEmailAndPassword(data.email, password)
+        .then(function() {
+          user = Auth.currentUser
+          var imagesRef = firebase.storage().ref().child('profile-images');
+          var file = $('#registerPhoto').get(0).files[0];
+          if(file) {
+            return saveImage(file, user.uid, imagesRef).then(function(url) {
+              console.log('File available at', url);
+              profileData.photoURL = url;
+              return user.updateProfile(profileData)
+            });
+          }
+          return user.updateProfile(profileData)
+        })
+        .then(function(){
+          saveUserInfo(data).then(function(){
+            console.log("User Information Saved:", user.uid);
           })
-          .then(function(){
-            auth = Auth.currentUser;
-            saveUserInfo(data).then(function(){
-              console.log("User Information Saved:", auth.uid);
-            })
-            $('#messageModalLabel').html(span('Success!', ['center', 'success']))
-            
-            $('#messageModal').modal('hide');
-          })
-          .catch(function(error){
-            console.log("Error creating user:", error);
-            $('#messageModalLabel').html(span('ERROR: '+error.code, ['danger']))
-          });
-      } else {
-        //password and confirm password didn't match
-        $('#messageModalLabel').html(span("ERROR: Passwords didn't match", ['danger']))
-      }
+          $('#messageModalLabel').html(span('Success!', ['center', 'success']))
+          
+          $('#messageModal').modal('hide');
+        })
+        .catch(function(error){
+          console.log("Error creating user:", error);
+          $('#messageModalLabel').html(span('ERROR: '+error.code, ['danger']))
+        });
     }  
   });
 
@@ -90,15 +79,12 @@ $(document).ready(function(){
     $('#messageModalLabel').html(span('<i class="fa fa-cog fa-spin"></i>', ['center', 'info']));
     $('#messageModal').modal('show');
 
-    if( $('#loginEmail').val() != '' && $('#loginPassword').val() != '' ){
-      //login the user
-      var data = {
-        email: $('#loginEmail').val(),
-        password: $('#loginPassword').val()
-      };
-      firebase.auth().signInWithEmailAndPassword(data.email, data.password)
+    var email = $('#loginEmail').val();
+    var password = $('#loginPassword').val();
+    if( email != '' && password != '' ){
+      Auth.signInWithEmailAndPassword(email, password)
         .then(function(authData) {
-          auth = authData;
+          user = authData;
           $('#messageModalLabel').html(span('Success!', ['center', 'success']))
           $('#messageModal').modal('hide');
         })
@@ -111,7 +97,7 @@ $(document).ready(function(){
 
   $('#logout').on('click', function(e) {
     e.preventDefault();
-    firebase.auth().signOut()
+    Auth.signOut()
   });
 
   //Login
@@ -127,7 +113,7 @@ $(document).ready(function(){
   //save contact
   $(forms.addContact).on('submit', function( event ) {  
     event.preventDefault();
-    if( auth != null ){
+    if( user != null ){
       if( $('#name').val() != '' || $('#email').val() != '' ){
         contactsRef.child(auth.uid).push({
           name: $('#name').val(),
@@ -147,10 +133,10 @@ $(document).ready(function(){
     }
   });
 
-  firebase.auth().onAuthStateChanged(function(user) {
-    if (user) {
+  Auth.onAuthStateChanged(function(userInfo) {
+    if (userInfo) {
+      user = userInfo;
       console.log(user)
-      auth = user;
       $('body').removeClass('auth-false').addClass('auth-true');
       usersRef.child(user.uid).once('value').then(function (snapshot) {
         var info = snapshot.val();
@@ -164,9 +150,9 @@ $(document).ready(function(){
     } else {
       // No user is signed in.
       $('body').removeClass('auth-true').addClass('auth-false');
-      auth && contactsRef.child(auth.uid).off('child_added', onChildAdd);
+      user && contactsRef.child(auth.uid).off('child_added', onChildAdd);
       $('#contacts').html('');
-      auth = null;
+      user = null;
     }
   });
 

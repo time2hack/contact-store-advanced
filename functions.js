@@ -25,9 +25,13 @@ var mimes = {
   },
 };
 
-var saveImage = function(file, filename, ref) {
+var saveImage = function(file, filename, ref, callbacks) {
   if(!ref) ref = firebase.storage().ref();
+  if(!callbacks) callbacks = {};
   if(mimes[file.type].extensions[0]) {
+    callbacks.success = callbacks.success || console.log;
+    callbacks.progress = callbacks.progress || console.log;
+    callbacks.error = callbacks.error || console.error;
 
     // Create the file metadata
     var metadata = {
@@ -36,8 +40,9 @@ var saveImage = function(file, filename, ref) {
 
     // Upload file and metadata to the object
     var uploadTask = ref.child(filename + '.' + mimes[file.type].extensions[0]).put(file, metadata);
-
-    return uploadTask;
+    uploadTask.on('state_changed', callbacks.progress, callbacks.error, callbacks.success);
+    
+    return uploadTask.then(function(snapshot) { return snapshot.ref.getDownloadURL(); });
   }
 }
 
