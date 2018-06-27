@@ -18,9 +18,11 @@ $(document).ready(function(){
   firebase.initializeApp(config);
 
   //create firebase references
-  var Auth = firebase.auth(); 
+  var Auth = firebase.auth();
+  var Storage = firebase.storage();
   var dbRef = firebase.database();
   var contactsRef = dbRef.ref('contacts')
+  var profileImagesRef = Storage.ref().child('profile-images')
   var usersRef = dbRef.ref('users')
   var user = null;
 
@@ -38,29 +40,20 @@ $(document).ready(function(){
     
     var password = $('#registerPassword').val(); //get the pass from Form
     var cPassword = $('#registerConfirmPassword').val(); //get the confirmPass from Form
+    var photo = $('#registerPhoto').get(0).files[0];
     var profileData = {
       displayName: data.firstName + ' ' + data.lastName,
       photoURL: null
     };
     if( data.email != '' && password != ''  && cPassword === password ){
       Auth.createUserWithEmailAndPassword(data.email, password)
-        .then(function() {
-          user = Auth.currentUser
-          var imagesRef = firebase.storage().ref().child('profile-images');
-          var file = $('#registerPhoto').get(0).files[0];
-          if(file) {
-            return saveImage(file, user.uid, imagesRef).then(function(url) {
-              console.log('File available at', url);
-              profileData.photoURL = url;
-              return user.updateProfile(profileData)
-            });
-          }
-          return user.updateProfile(profileData)
-        })
+        .then(function() { user = Auth.currentUser })
+        .then(function() { photo ? saveImage(photo, user.uid, profileImagesRef) : null })
+        .then(function(url) { profileData.photoURL = url; })
+        .then(function(){ return user.updateProfile(profileData) })
+        .then(function(){ saveUserInfo(data) })
         .then(function(){
-          saveUserInfo(data).then(function(){
-            console.log("User Information Saved:", user.uid);
-          })
+          console.log("User Information Saved:", user.uid);
           $('#messageModalLabel').html(span('Success!', ['center', 'success']))
           
           $('#messageModal').modal('hide');

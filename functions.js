@@ -58,7 +58,8 @@ function contactHtmlFromObject(key, contact){
       + '<h5 class="card-title">'+contact.name+'</h5>'
       + '<h6 class="card-subtitle mb-2 text-muted">'+contact.email+'</h6>'
       + '<p class="card-text" title="' + contact.location.zip+'">'
-        + contact.location.city + ', '
+        + contact.location.city 
+        + (contact.location.state === '' ? '' : ', ')
         + contact.location.state
       + '</p>'
     + '</div>'
