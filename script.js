@@ -90,7 +90,7 @@ $(document).ready(function(){
 
   $('#logout').on('click', function(e) {
     e.preventDefault();
-    Auth.signOut()
+    Auth.signOut();
   });
 
   //Login
@@ -142,7 +142,7 @@ $(document).ready(function(){
     } else {
       // No user is signed in.
       $('body').removeClass('auth-true').addClass('auth-false');
-      user && contactsRef.child(auth.uid).off('child_added', onChildAdd);
+      user && contactsRef.child(user.uid).off('child_added', onChildAdd);
       $('#contacts').html('');
       user = null;
     }
