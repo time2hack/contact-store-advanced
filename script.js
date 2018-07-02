@@ -48,7 +48,7 @@ $(document).ready(function(){
     if( data.email != '' && password != ''  && cPassword === password ){
       Auth.createUserWithEmailAndPassword(data.email, password)
         .then(function() { user = Auth.currentUser })
-        .then(function() { photo ? saveImage(photo, user.uid, profileImagesRef) : null })
+        .then(function() { return photo ? saveImage(photo, user.uid, profileImagesRef) : null })
         .then(function(url) { profileData.photoURL = url; })
         .then(function(){ return user.updateProfile(profileData) })
         .then(function(){ saveUserInfo(data) })
@@ -58,6 +58,7 @@ $(document).ready(function(){
           
           $('#messageModal').modal('hide');
         })
+        .then(updateUserStatus)
         .catch(function(error){
           console.log("Error creating user:", error);
           $('#messageModalLabel').html(span('ERROR: '+error.code, ['danger']))
@@ -125,7 +126,14 @@ $(document).ready(function(){
     }
   });
 
-  Auth.onAuthStateChanged(function(userInfo) {
+  Auth.onAuthStateChanged(updateUserStatus);
+
+  function saveUserInfo(data) {
+    user = Auth.currentUser;
+    return usersRef.child(user.uid).set(data)
+  }
+  function updateUserStatus(userInfo) {
+    userInfo = userInfo || Auth.currentUser;
     if (userInfo) {
       user = userInfo;
       console.log(user)
@@ -146,10 +154,6 @@ $(document).ready(function(){
       $('#contacts').html('');
       user = null;
     }
-  });
-
-  function saveUserInfo(data) {
-    user = Auth.currentUser;
-    return usersRef.child(user.uid).set(data)
   }
 });
+
