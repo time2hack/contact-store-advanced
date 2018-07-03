@@ -49,3 +49,6 @@ header + hr {
 .auth-false .authenticated {
   display: none;
 }
+#addContactModalTrigger {
+  transition: all ease 500ms;
+}

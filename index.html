@@ -35,7 +35,15 @@
     <hr/>
     <main class="authenticated">
       <center>
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addContactModal">Add Contact</button>
+        <div id="email-verification" class="d-none">
+          <div class="alert alert-danger" role="alert">
+            Email not verified! Please verify your email!<br/>To send verification email, <a href="#" id="send-verification">Click Here</a>
+          </div>
+          <div class="text-center">
+            <span class="d-inline-block alert alert-warning" role="alert">You can not Contacts until you verify your email!</span>
+          </div>
+        </div>
+        <button type="button" id="addContactModalTrigger" class="btn btn-primary" data-toggle="modal" data-target="#addContactModal">Add Contact</button>
       </center>
       <div id="contacts"></div>
     </main>

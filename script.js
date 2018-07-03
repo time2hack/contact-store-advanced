@@ -25,6 +25,7 @@ $(document).ready(function(){
   var profileImagesRef = Storage.ref().child('profile-images')
   var usersRef = dbRef.ref('users')
   var user = null;
+  var userData = null;
 
   //Register
   $(forms.register).on('submit', function (e) {
@@ -48,11 +49,13 @@ $(document).ready(function(){
     if( data.email != '' && password != ''  && cPassword === password ){
       Auth.createUserWithEmailAndPassword(data.email, password)
         .then(function() { user = Auth.currentUser })
+        .then(function() { return sendEmailVerification(data) })
         .then(function() { return photo ? saveImage(photo, user.uid, profileImagesRef) : null })
         .then(function(url) { profileData.photoURL = url; })
         .then(function(){ return user.updateProfile(profileData) })
         .then(function(){ saveUserInfo(data) })
         .then(function(){
+          userData = data;
           console.log("User Information Saved:", user.uid);
           $('#messageModalLabel').html(span('Success!', ['center', 'success']))
           
@@ -98,11 +101,39 @@ $(document).ready(function(){
   $(forms.updateUserInfo).on('submit', function (e) {
     e.preventDefault();
     var values = extractFormData(forms.updateUserInfo);
+    console.log(values)
     user = Auth.currentUser;
-    saveUserInfo(values).then(function(){
-      console.log("User Information Saved:", user.uid);
-    })
+    var profileData = {
+      displayName: values.firstName + ' ' + values.lastName,
+      photoURL: null
+    };
+    var promise = values.photo
+      ? saveImage(values.photo, user.uid, profileImagesRef)
+        .then(function(url) { profileData.photoURL = url; })
+        .then(function(){ return user.updateProfile(profileData) })
+      : Promise.resolve(null);
+    promise
+      .then(function() { return saveUserInfo(values); })
+      .then(updateUserStatus)
+      .then(function(){
+        console.log("User Information Saved:", user.uid);
+        $('#updateInfoModal').modal('hide');
+      })
   });
+
+  // Send the email verification link
+  $('#send-verification').on('click', sendEmailVerification)
+
+  // Prevent User from adding contact if email is not verified
+  $('#addContactModalTrigger').on('click', function(e) {
+    if(!user.emailVerified) {
+      e.stopPropagation()
+      e.target.classList.add('btn-danger')
+      setTimeout(function() {
+        e.target.classList.remove('btn-danger')
+      }, 500);
+    }
+  })
 
   //save contact
   $(forms.addContact).on('submit', function( event ) {  
@@ -132,18 +163,30 @@ $(document).ready(function(){
     user = Auth.currentUser;
     return usersRef.child(user.uid).set(data)
   }
+  function sendEmailVerification(data) {
+    email = data.email || userData.email
+    return user.emailVerified || user.sendEmailVerification({
+      url: window.location.href + '?email=' + userData.email,
+    });
+  }
   function updateUserStatus(userInfo) {
     userInfo = userInfo || Auth.currentUser;
     if (userInfo) {
       user = userInfo;
-      console.log(user)
+      console.log(user, user.emailVerified)
       $('body').removeClass('auth-false').addClass('auth-true');
+      if(user.emailVerified) {
+        document.querySelector('#email-verification').classList.add('d-none')
+      } else {
+        document.querySelector('#email-verification').classList.remove('d-none')
+      }
       usersRef.child(user.uid).once('value').then(function (snapshot) {
         var info = snapshot.val();
         var data = Object.assign({}, info, {
           photoURL: user.photoURL,
           displayName: user.displayName,
         });
+        userData = data;
         setUserInfoArea(data);
       });
       contactsRef.child(user.uid).on('child_added', onChildAdd);
