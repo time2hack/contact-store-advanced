@@ -145,6 +145,24 @@ $(document).ready(function(){
 
   // Send the email verification link
   $('#send-verification').on('click', sendEmailVerification)
+  $('#changePasswordTrigger').on('click', function() {
+    var c = document.querySelector('#forgotPasswordModal').querySelectorAll('.auth-false')
+    c.forEach(el => el.classList.add('d-none'))
+  })
+  $('#forgotPasswordTrigger').on('click', function() {
+    var c = document.querySelector('#forgotPasswordModal').querySelectorAll('.auth-false')
+    c.forEach(el => el.classList.rmeove('d-none'))
+  })
+  
+  
+  $('.linkSocial').on('click', function(e) {
+    var provider = e.target.getAttribute('data-provider');
+    var p = provider+'AuthProvider';
+    provider = firebase.auth[p];
+    if(provider) {
+      Auth.currentUser.linkWithPopup(new provider).then(console.log)
+    }
+  })
 
   // Prevent User from adding contact if email is not verified
   $('#addContactModalTrigger').on('click', function(e) {

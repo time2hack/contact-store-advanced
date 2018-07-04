@@ -26,7 +26,8 @@
           </span>
           <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
             <a class="dropdown-item" href="#" data-toggle="modal" data-target="#updateInfoModal">Update Info</a>
-            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#settingsModal">Change Email and Password</a>
+            <a class="dropdown-item" href="#" data-target="#forgotPasswordModal" data-toggle="modal" id="changePasswordTrigger">Change Password</a>
+            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#connectSocialAccountsModal">Connect Social Accounts</a>
           </div>
         </div>
         <button type="button" class="btn btn-success" id="logout">Logout</button>
@@ -116,7 +117,7 @@
               <input type="password" class="form-control" id="loginPassword">
             </div>
             <div class="form-group">
-              <a data-target="#forgotPasswordModal" data-toggle="modal" data-dismiss="modal" href="#">Forgot Password?</a>
+              <a data-target="#forgotPasswordModal" data-toggle="modal" data-dismiss="modal" href="#" id="forgotPasswordTrigger">Forgot Password?</a>
             </div>
           </div>
           <div class="modal-footer">
@@ -132,7 +133,7 @@
         <div class="modal-content">
           <form id="forgotPasswordForm" method="POST">
             <div class="modal-header">
-              <h4 class="modal-title" id="forgotPasswordModalLabel">Forgot Password</h4>
+              <h4 class="modal-title auth-false" id="forgotPasswordModalLabel">Forgot Password</h4>
               <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
@@ -142,7 +143,7 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button type="button" data-target="#loginModal" data-toggle="modal" class="btn btn-primary">Login</button>
+              <button type="button" data-target="#loginModal" data-toggle="modal" class="btn btn-primary auth-false">Login</button>
               <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
               <button type="submit" class="btn btn-primary">Send Reset Link</button>
             </div>
@@ -239,37 +240,30 @@
       </form>
     </div>
   </div>
-  <div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal fade" id="connectSocialAccountsModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog">
-      <form id="settingsForm" method="POST">
+      <form id="connectSocialAccountsForm" method="POST">
         <div class="modal-content">
           <div class="modal-header">
-            <h4 class="modal-title" id="messageModalLabel">Settings</h4>
+            <h4 class="modal-title">Connect Social Accounts</h4>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           </div>
           <div class="modal-body">
             <div class="form-group">
-              <label for="settingsEmail" class="control-label">Email:</label>
-              <input type="text" class="form-control" name="settingsEmail" id="settingsEmail">
+              <button type="button" class="btn btn-primary linkSocial" id="linkFacebook" data-provider="Facebook"><i class="fa fa-facebook"></i> Connect Facebook</button>
             </div>
             <div class="form-group">
-              <label for="settingsPassword" class="control-label">Password:</label>
-              <input type="password" class="form-control" name="settingsPassword" id="settingsPassword">
-            </div>
-            <div class="form-group">
-              <label for="settingsConfirmPassword" class="control-label">Confirm Password:</label>
-              <input type="password" class="form-control" name="settingsConfirmPassword" id="settingsConfirmPassword">
+              <button type="button" class="btn btn-primary linkSocial" id="linkTwitter" data-provider="Twitter"><i class="fa fa-twitter"></i> Connect Twitter</button>
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary" id="doUpdateSettings">Update</button>
+            <button type="button" class="btn btn-outline-dark" data-dismiss="modal">Close</button>
           </div>
         </div>
       </form>
     </div>
   </div>
-
+  
 
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
