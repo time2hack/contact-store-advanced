@@ -98,7 +98,7 @@
       </div>
     </div>
   </div>
-  <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="Login" aria-hidden="true">
+  <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-label="Login" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <form id="loginForm" method="POST">
@@ -115,6 +115,9 @@
               <label for="message-text" class="control-label">Password:</label>
               <input type="password" class="form-control" id="loginPassword">
             </div>
+            <div class="form-group">
+              <a data-target="#forgotPasswordModal" data-toggle="modal" data-dismiss="modal" href="#">Forgot Password?</a>
+            </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -124,6 +127,29 @@
       </div>
     </div>
   </div>
+  <div class="modal fade" id="forgotPasswordModal" tabindex="-1" role="dialog" aria-label="Forgot Password" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form id="forgotPasswordForm" method="POST">
+            <div class="modal-header">
+              <h4 class="modal-title" id="forgotPasswordModalLabel">Forgot Password</h4>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+              <div class="form-group">
+                <label for="recipient-name" class="control-label">Email:</label>
+                <input type="text" name="email" class="form-control">
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" data-target="#loginModal" data-toggle="modal" class="btn btn-primary">Login</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Send Reset Link</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   <div class="modal fade" id="addContactModal" tabindex="-1" role="dialog" aria-labelledby="Add Contact" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">

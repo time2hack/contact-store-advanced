@@ -1,10 +1,12 @@
 $(document).ready(function(){
+  var cogHTML = '<i class="fa fa-cog fa-spin"></i>';
   var forms = {
     login: '#loginForm',
     settings: '#settingsForm',
     updateUserInfo: '#updateForm',
     addContact: '#contactForm',
     register: '#registerForm',
+    forgotPassword: '#forgotPasswordForm',
   }
   //initialize the firebase app
   var config = {
@@ -31,7 +33,7 @@ $(document).ready(function(){
   $(forms.register).on('submit', function (e) {
     e.preventDefault();
     $('#registerModal').modal('hide');
-    $('#messageModalLabel').html(span('<i class="fa fa-cog fa-spin"></i>', ['center', 'info']));
+    $('#messageModalLabel').html(span(cogHTML, ['center', 'info']));
     $('#messageModal').modal('show');
     var data = {
       email: $('#registerEmail').val(), //get the email from Form
@@ -73,7 +75,7 @@ $(document).ready(function(){
   $(forms.login).on('submit', function (e) {
     e.preventDefault();
     $('#loginModal').modal('hide');
-    $('#messageModalLabel').html(span('<i class="fa fa-cog fa-spin"></i>', ['center', 'info']));
+    $('#messageModalLabel').html(span(cogHTML, ['center', 'info']));
     $('#messageModal').modal('show');
 
     var email = $('#loginEmail').val();
@@ -87,6 +89,26 @@ $(document).ready(function(){
         })
         .catch(function(error) {
           console.log("Login Failed!", error);
+          $('#messageModalLabel').html(span('ERROR: '+error.code, ['danger']))
+        });
+    }
+  });
+  
+  // Forgot Password
+  $(forms.forgotPassword).on('submit', function (e) {
+    e.preventDefault();
+    $('#forgotPasswordModal').modal('hide');
+    $('#messageModalLabel').html(span(cogHTML, ['center', 'info']));
+    $('#messageModal').modal('show');
+
+    var data = extractFormData(forms.forgotPassword);
+    if( email !== ''){
+      firebase.auth().sendPasswordResetEmail(data.email)
+        .then(function() {
+          $('#messageModalLabel').html(span('Reset Link sent to email!', ['center', 'success']));
+        })
+        .catch(function(error) {
+          console.error("Login Failed!", error);
           $('#messageModalLabel').html(span('ERROR: '+error.code, ['danger']))
         });
     }
