@@ -53,7 +53,8 @@ function onChildAdd (snap) {
  
 //prepare contact object's HTML
 function contactHtmlFromObject(key, contact){
-  return '<div class="card contact" style="width: 18rem;" id="'+key+'">'
+  return document.querySelector('#'+key) ? ''
+  : '<div class="card contact" style="width: 18rem;" id="'+key+'">'
     + '<div class="card-body">'
       + '<h5 class="card-title">'+contact.name+'</h5>'
       + '<h6 class="card-subtitle mb-2 text-muted">'+contact.email+'</h6>'
@@ -79,10 +80,10 @@ function setUserInfoArea(data) {
     $('.user-info .user-name').hide();
   } else if(data.displayName) {
     $('.user-info img').hide();
-    $('.user-info').append('<span class="user-name">'+data.displayName+'</span>');
+    $('.user-info').append('<span class="btn btn-link user-name">'+data.displayName+'</span>');
   } else if(data.firstName) {
     $('.user-info img').hide();
-    $('.user-info').append('<span class="user-name">'+data.firstName+'</span>');
+    $('.user-info').append('<span class="btn btn-link user-name">'+data.firstName+'</span>');
   }
 }
 

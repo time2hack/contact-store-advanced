@@ -123,7 +123,6 @@ $(document).ready(function(){
   $(forms.updateUserInfo).on('submit', function (e) {
     e.preventDefault();
     var values = extractFormData(forms.updateUserInfo);
-    console.log(values)
     user = Auth.currentUser;
     var profileData = {
       displayName: values.firstName + ' ' + values.lastName,
@@ -159,7 +158,7 @@ $(document).ready(function(){
     var provider = e.target.getAttribute('data-provider');
     var p = provider+'AuthProvider';
     provider = firebase.auth[p];
-    if(provider) {
+    if(provider && e.target.hasAttribute('disabled')) {
       Auth.currentUser.linkWithPopup(new provider).then(console.log)
     }
   })
@@ -213,13 +212,19 @@ $(document).ready(function(){
     userInfo = userInfo || Auth.currentUser;
     if (userInfo) {
       user = userInfo;
-      console.log(user, user.emailVerified)
       $('body').removeClass('auth-false').addClass('auth-true');
       if(user.emailVerified) {
         document.querySelector('#email-verification').classList.add('d-none')
       } else {
         document.querySelector('#email-verification').classList.remove('d-none')
       }
+      var providers = user.providerData.map(function(provider){ return provider.providerId;});
+      var _providers = providers.join(',');
+      [].slice.call(document.querySelectorAll('.linkSocial')).forEach(function(el) {
+        if(_providers.split(new RegExp(el.getAttribute('data-provider'), 'ig')).length > 1) {
+          el.setAttribute('disabled', true);
+        }
+      });
       usersRef.child(user.uid).once('value').then(function (snapshot) {
         var info = snapshot.val();
         var data = Object.assign({}, info, {
