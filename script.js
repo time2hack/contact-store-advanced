@@ -108,7 +108,7 @@ $(document).ready(function(){
           $('#messageModalLabel').html(span('Reset Link sent to email!', ['center', 'success']));
         })
         .catch(function(error) {
-          console.error("Login Failed!", error);
+          console.error("Failed!", error);
           $('#messageModalLabel').html(span('ERROR: '+error.code, ['danger']))
         });
     }
@@ -119,7 +119,7 @@ $(document).ready(function(){
     Auth.signOut();
   });
 
-  //Login
+  //Update user info
   $(forms.updateUserInfo).on('submit', function (e) {
     e.preventDefault();
     var values = extractFormData(forms.updateUserInfo);
@@ -203,9 +203,9 @@ $(document).ready(function(){
     return usersRef.child(user.uid).set(data)
   }
   function sendEmailVerification(data) {
-    email = data.email || userData.email
+    email = data.email || user.email
     return user.emailVerified || user.sendEmailVerification({
-      url: window.location.href + '?email=' + userData.email,
+      url: window.location.href + '?email=' + user.email,
     });
   }
   function updateUserStatus(userInfo) {
