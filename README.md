@@ -1,7 +1,7 @@
 <div align="center">
-  <p><img src="https://res.cloudinary.com/time2hack/image/upload/simple-login-in-firebase-web-api.png" alt="Simple Login in Firebase Web API" width="200" /></p>
+  <p><img src="https://res.cloudinary.com/time2hack/image/upload/q_auto:good/advanced-user-actions-for-firebase-login-social.jpg" width="100%" /></p>
   
-[Simple Login in Firebase Web API](http://time2hack.com/2015/05/simple-login-in-firebase-web-api/)
+[Advanced User actions for Firebase Login 🎛](https://time2hack.com/2018/07/advanced-user-actions-for-firebase-login/)
 </div>
 
 # Contact Store
